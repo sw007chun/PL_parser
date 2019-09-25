@@ -9,7 +9,7 @@
 %}
 
 %union {
-	int ival;
+//	int ival;
 	char *sval;
 }
 
@@ -23,11 +23,11 @@
 %token ADD MINUS
 %token DOT COMMA SEMIC COLON QUES
 
-%token <ival> INT
-%token <sval> STRING ARBSTR
+//%token <ival> INT
+%token <sval> STRING ARBSTR INT
 
-//%type <ival> iexpr
-//%type <sval> arbstr
+//%type <ival> exprs
+%type <sval> str //rvalue ternary conds funcdef exprs attrs assign attr cond factor
 
 %left COMMA
 %right ASSIGN
@@ -53,9 +53,9 @@ stmts :
 	;
 stmt :
 	instr
-	| func
+	| funcdef
 	;
-func :
+funcdef :
 	FUNCTION STRING LPAREN args RPAREN block
 	| FUNCTION LPAREN args RPAREN block
 	;
@@ -73,48 +73,54 @@ instrs :
 instr :
 	IF LPAREN conds RPAREN block
 	| WHILE LPAREN conds RPAREN block
+	| WHILE LPAREN assign RPAREN block
 	| FOR LPAREN STRING IN attrs RPAREN block
-	| VAR exprs SEMIC
+	| VAR attrs SEMIC
+	| VAR assign SEMIC
 	| RETURN rvalue SEMIC
-	| exprs SEMIC
-	| construct
+	| factor SEMIC 
+	| assign SEMIC
+	| SEMIC
 	;
 construct :
-	construct COMMA
-	| attrs COLON attrs
+	construct COMMA init
+	| init
+	;
+init :
+	attrs COLON attrs  // {cout << $1 << " " << $3 << endl;}
+	;
+ternary :
+	conds QUES rvalue COLON rvalue
+	;
+assign :
+	attrs ASSIGN conds //{cout << "1: " << $1 << endl;}
+	| attrs ASSIGN funcdef
 	;
 conds :
 	conds and_or cond
 	| cond
 	;
 cond :
-	cond comp_op factor
-	| factor
-	;
-factor :
+	cond comp_op exprs // { cout << "comp " << $1 << " " << $3 << endl; }
 	| exprs
-	| literal
-	;
-ternary :
-	conds QUES rvalue COLON rvalue
 	;
 exprs :
-	attrs inc_op
-	| inc_op attrs
-	| TYPEOF attrs
-	| attrs assign
-	| attrs arith
-	| funcalls
-	| attrs
+	exprs add_op factor  
+	| factor  
 	;
-assign :
-	ASSIGN rvalue
-	| ASSIGN block
+factor :
+	LPAREN exprs RPAREN
+	| LCURLY construct RCURLY
+	| attrs	
+	| funcalls 
+	| attrs inc_op 		
+	| inc_op attrs 
+	| TYPEOF attrs
 	;
 rvalue :
 	ternary
-	| conds
-	| func
+	| conds 
+	| funcdef
 	;
 funcalls :
 	funcalls DOT funcall
@@ -122,27 +128,22 @@ funcalls :
 	;
 funcall :
 	attrs LPAREN attrs RPAREN
-	| attrs LPAREN literal RPAREN
 	| attrs LPAREN RPAREN
 	;
-arith :
-	arith add_op attrs
-	| add_op rvalue
-	;
 attrs :
-	attrs attr
-	| attr
+	attrs attr		
+	| str
+	| literal
 	;
 attr :
-	DOT str
-	| LSQUARE rvalue RSQUARE 
-	| str
+	DOT str					//	{ $$ = $2; }	
+	| LSQUARE rvalue RSQUARE   // { $$ = $2; }
 	;
 str :
-	STRING
+	STRING	
 	;
 literal :
-	LITERAL
+	LITERAL 
 	| INT
 	;
 comp_op :
@@ -155,7 +156,7 @@ inc_op :
 	INCR | DECR
 	;
 add_op :
-    ADD | MINUS
+    ADD | MINUS 
     ;
 %%
 
@@ -180,4 +181,3 @@ void yyerror(const char *s) {
 	cout << "Line " << linenum << " Error Message: " << s << endl;
 	exit(-1);
 }
-

@@ -2,7 +2,7 @@ function addHandle( attrs, handler ) {
 	
 	var arr = attrs.split("|");
 	i = arr.length;
-
+	a = 1 + 1;	
 	while ( i-- ) {
 		Expr.attrHandle[ arr[i] ] = handler;
 	}

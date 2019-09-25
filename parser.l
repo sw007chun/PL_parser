@@ -43,9 +43,9 @@
 ";"             { return SEMIC; }
 ":"             { return COLON; }
 "?"             { return QUES; }
-[+-]*[0-9]+	{ yylval.ival = atoi(yytext); cout << "INT: " << yytext << endl; return INT; }
-[a-zA-Z0-9]+    { yylval.sval = strdup(yytext); cout << yytext << endl; return STRING; }
-.                       { yylval.sval = strdup(yytext); cout << yytext << endl; return ARBSTR; }
+[+-]*[0-9]+		{ yylval.sval = strdup(yytext); return INT; }
+[a-zA-Z0-9]+    { yylval.sval = strdup(yytext); cout << yytext << endl;  return STRING; }
+.               { yylval.sval = strdup(yytext); cout << yytext << endl; return ARBSTR; }
 
 %%
 

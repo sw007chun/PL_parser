@@ -75,9 +75,9 @@ extern int yydebug;
     SEMIC = 285,
     COLON = 286,
     QUES = 287,
-    INT = 288,
-    STRING = 289,
-    ARBSTR = 290
+    STRING = 288,
+    ARBSTR = 289,
+    INT = 290
   };
 #endif
 
@@ -88,7 +88,7 @@ union YYSTYPE
 {
 #line 11 "parser.y" /* yacc.c:1909  */
 
-	int ival;
+//	int ival;
 	char *sval;
 
 #line 95 "parser.tab.h" /* yacc.c:1909  */

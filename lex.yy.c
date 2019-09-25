@@ -947,12 +947,12 @@ YY_RULE_SETUP
 case 34:
 YY_RULE_SETUP
 #line 46 "parser.l"
-{ yylval.ival = atoi(yytext); cout << "INT: " << yytext << endl; return INT; }
+{ yylval.sval = strdup(yytext); return INT; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
 #line 47 "parser.l"
-{ yylval.sval = strdup(yytext); cout << yytext << endl; return STRING; }
+{ yylval.sval = strdup(yytext); cout << yytext << endl;  return STRING; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
