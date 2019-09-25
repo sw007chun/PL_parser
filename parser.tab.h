@@ -88,8 +88,8 @@ union YYSTYPE
 {
 #line 11 "parser.y" /* yacc.c:1909  */
 
-        int ival;
-        char *sval;
+	int ival;
+	char *sval;
 
 #line 95 "parser.tab.h" /* yacc.c:1909  */
 };

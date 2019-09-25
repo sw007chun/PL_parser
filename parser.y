@@ -1,16 +1,16 @@
 %{
-        #include <cstdio>
-        #include <iostream>
-        using namespace std;
-        extern int yylex();
-        extern void yyerror(const char *p);
-        extern FILE *yyin;
-        extern int linenum;
+	#include <cstdio>
+	#include <iostream>
+	using namespace std;
+	extern int yylex();
+	extern void yyerror(const char *p);
+	extern FILE *yyin;
+	extern int linenum;
 %}
 
 %union {
-        int ival;
-        char *sval;
+	int ival;
+	char *sval;
 }
 
 %start prog
@@ -27,7 +27,7 @@
 %token <sval> STRING ARBSTR
 
 //%type <ival> iexpr
-%type <sval> arbstr
+//%type <sval> arbstr
 
 %left COMMA
 %right ASSIGN
@@ -44,40 +44,41 @@
 %%
 
 prog :
-        stmts
-        |
-        ;
+	stmts
+	|
+	;
 stmts :
-        stmts stmt
-        | stmt
-        ;
+	stmts stmt
+	| stmt
+	;
 stmt :
-        instr
-        | func
-        ;
+	instr
+	| func
+	;
 func :
-        FUNCTION arbstr LPAREN args RPAREN block
-        ;
+	FUNCTION STRING LPAREN args RPAREN block
+	| FUNCTION LPAREN args RPAREN block
+	;
 args :
-        args COMMA STRING
-        | STRING
-        ;
+	args COMMA STRING
+	| STRING
+	;
 block :
-        LCURLY instrs RCURLY
-        ;
+	LCURLY instrs RCURLY
+	;
 instrs :
-        instrs instr
-        | instr
-        ;
+	instrs instr
+	| instr
+	;
 instr :
-        IF LPAREN conds RPAREN block
-        | WHILE LPAREN conds RPAREN block
-        | FOR LPAREN forcond RPAREN block
-        | VAR exprs SEMIC
-		| RETURN rvalue SEMIC
-		| exprs SEMIC
-		| construct
-        ;
+	IF LPAREN conds RPAREN block
+	| WHILE LPAREN conds RPAREN block
+	| FOR LPAREN STRING IN attrs RPAREN block
+	| VAR exprs SEMIC
+	| RETURN rvalue SEMIC
+	| exprs SEMIC
+	| construct
+	;
 construct :
 	construct COMMA
 	| attrs COLON attrs
@@ -87,12 +88,15 @@ conds :
 	| cond
 	;
 cond :
-	cond comp_op cond
+	cond comp_op factor
+	| factor
+	;
+factor :
 	| exprs
 	| literal
 	;
 ternary :
-	conds QUES conds COLON conds
+	conds QUES rvalue COLON rvalue
 	;
 exprs :
 	attrs inc_op
@@ -121,36 +125,28 @@ funcall :
 	| attrs LPAREN literal RPAREN
 	| attrs LPAREN RPAREN
 	;
-forcond :
-	STRING IN attrs
-	;
-
 arith :
 	arith add_op attrs
-	| add_op attrs
-	| add_op literal
+	| add_op rvalue
 	;
 attrs :
 	attrs attr
 	| attr
 	;
 attr :
-	DOT attr
-	| LSQUARE attrs RSQUARE 
-	| STRING
+	DOT str
+	| LSQUARE rvalue RSQUARE 
+	| str
+	;
+str :
+	STRING
 	;
 literal :
 	LITERAL
 	| INT
 	;
-arbstr :
-	arbstr ARBSTR
-	| STRING
-	| ARBSTR
-	| 
-	;
 comp_op :
-    EQUAL | SEQUAL | NEQUAL | OR | AND
+    EQUAL | SEQUAL | NEQUAL
     ;
 and_or :
 	AND | OR
@@ -164,26 +160,24 @@ add_op :
 %%
 
 int main(int argc, char* argv[]) {
+	if (argc < 2) {
+		cout << "Wrong number of input. Should be ./parser inputfile.name" << endl;
+		return -1;
+	}
 
-        if (argc < 2) {
-                cout << "Wrong number of input. Should be ./parser inputfile.name" << endl;
-                return -1;
-        }
+	FILE *myfile = fopen(argv[1], "r");
 
-        FILE *myfile = fopen(argv[1], "r");
+	if (!myfile) {
+		cout << "Can't open file: " << argv[1] << endl;
+		return -1;
+	}
 
-        if (!myfile) {
-                cout << "Can't open file: " << argv[1] << endl;
-                return -1;
-        }
-
-        yyin = myfile;
-
-        yyparse();
+	yyin = myfile;
+	yyparse();
 }
 
 void yyerror(const char *s) {
-        cout << "Line " << linenum << " Error Message: " << s << endl;
-        exit(-1);
+	cout << "Line " << linenum << " Error Message: " << s << endl;
+	exit(-1);
 }
 
