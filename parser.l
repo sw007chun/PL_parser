@@ -13,7 +13,7 @@
 [ \t\r]+        ;
 [\n]            { ++linenum; }
 "//".*			;
-"\"".*"\""		{ return LITERAL; };
+\"[^"]*\"		{ yylval.sval = strdup(yytext); return LITERAL; };
 "function"      { return FUNCTION; }
 "var"           { return VAR; }
 "return"        { return RETURN; }
@@ -44,7 +44,7 @@
 ":"             { return COLON; }
 "?"             { return QUES; }
 [+-]*[0-9]+		{ yylval.sval = strdup(yytext); return INT; }
-[a-zA-Z0-9]+    { yylval.sval = strdup(yytext); cout << yytext << endl;  return STRING; }
+[a-zA-Z0-9]+    { yylval.sval = strdup(yytext);   return STRING; }
 .               { yylval.sval = strdup(yytext); cout << yytext << endl; return ARBSTR; }
 
 %%

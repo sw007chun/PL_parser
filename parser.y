@@ -6,6 +6,7 @@
 	extern void yyerror(const char *p);
 	extern FILE *yyin;
 	extern int linenum;
+	
 %}
 
 %union {
@@ -27,7 +28,7 @@
 %token <sval> STRING ARBSTR INT
 
 //%type <ival> exprs
-%type <sval> str //rvalue ternary conds funcdef exprs attrs assign attr cond factor
+%type <sval> str exprs cond conds factor attr attrs literal rvalue
 
 %left COMMA
 %right ASSIGN
@@ -74,7 +75,7 @@ instr :
 	IF LPAREN conds RPAREN block
 	| WHILE LPAREN conds RPAREN block
 	| WHILE LPAREN assign RPAREN block
-	| FOR LPAREN STRING IN attrs RPAREN block
+	| FOR LPAREN STRING IN rvalue RPAREN block
 	| VAR attrs SEMIC
 	| VAR assign SEMIC
 	| RETURN rvalue SEMIC
@@ -87,7 +88,7 @@ construct :
 	| init
 	;
 init :
-	attrs COLON attrs  // {cout << $1 << " " << $3 << endl;}
+	attrs COLON rvalue  // {cout << $1 << " " << $3 << endl;}
 	;
 ternary :
 	conds QUES rvalue COLON rvalue
@@ -97,11 +98,13 @@ assign :
 	| attrs ASSIGN funcdef
 	;
 conds :
-	conds and_or cond
+	conds AND conds { cout << "and " << $1 << " / " << $3 << endl; $$ = $3; }
+	| conds OR conds { cout << "or " << $1 << " / " << $3 << endl; $$ = $3; }
+	| LPAREN conds RPAREN	{ $$ = $2;}
 	| cond
 	;
 cond :
-	cond comp_op exprs // { cout << "comp " << $1 << " " << $3 << endl; }
+	cond comp_op exprs { cout << "comp " << $1 << " / " << $3 << endl; $$ = $3; }
 	| exprs
 	;
 exprs :
@@ -109,13 +112,13 @@ exprs :
 	| factor  
 	;
 factor :
-	LPAREN exprs RPAREN
-	| LCURLY construct RCURLY
+	LCURLY construct RCURLY
 	| attrs	
 	| funcalls 
 	| attrs inc_op 		
 	| inc_op attrs 
-	| TYPEOF attrs
+	| TYPEOF attrs {$$ = $2;}
+	| literal
 	;
 rvalue :
 	ternary
@@ -127,17 +130,16 @@ funcalls :
 	| funcall
 	;
 funcall :
-	attrs LPAREN attrs RPAREN
+	attrs LPAREN rvalue RPAREN
 	| attrs LPAREN RPAREN
 	;
 attrs :
-	attrs attr		
+	attrs attr					{ $$ = $2; }
 	| str
-	| literal
 	;
 attr :
-	DOT str					//	{ $$ = $2; }	
-	| LSQUARE rvalue RSQUARE   // { $$ = $2; }
+	DOT str						{ $$ = $2; }	
+	| LSQUARE rvalue RSQUARE    { $$ = $2; }
 	;
 str :
 	STRING	
@@ -149,9 +151,6 @@ literal :
 comp_op :
     EQUAL | SEQUAL | NEQUAL
     ;
-and_or :
-	AND | OR
-	;
 inc_op :
 	INCR | DECR
 	;
@@ -175,6 +174,7 @@ int main(int argc, char* argv[]) {
 
 	yyin = myfile;
 	yyparse();
+	cout << "Well-formed!! " <<endl;
 }
 
 void yyerror(const char *s) {

@@ -2,7 +2,7 @@ function addHandle( attrs, handler ) {
 	
 	var arr = attrs.split("|");
 	i = arr.length;
-	a = 1 + 1;	
+	a = 1 + a - attrs.split("|");	
 	while ( i-- ) {
 		Expr.attrHandle[ arr[i] ] = handler;
 	}
@@ -10,8 +10,7 @@ function addHandle( attrs, handler ) {
 
 function siblingCheck( a, b ) {
 	var cur = b && a;
-	diff = cur && a.nodeType === 1 && b.nodeType === 1 &&
-			a.sourceIndex - b.sourceIndex;
+	diff = a.nodeType === 1 || b.nodeType2 === 2 && a.sourceIndex1 - b.sourceIndex2;
 
 	// Use IE sourceIndex if available on both nodes
 	if ( diff ) {
